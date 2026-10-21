@@ -1,0 +1,36 @@
+# Local run: cp .env.example .env, then docker compose up --build
+# UI -> http://<server-ip>:${FRONTEND_PORT:-5436}   (the backend has no published port; it is reached through /api)
+# The database is NOT created here: it reuses the existing MariaDB container (network netdiag_default),
+# in its own database `jkb_with_country` with its own user.
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT:-3306}/${MYSQL_DATABASE}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      ENABLE_POLLERS: ${ENABLE_POLLERS:-false}
+      JKB_USER_EMAIL: ${JKB_USER_EMAIL:-}
+      JKB_USER_PWD: ${JKB_USER_PWD:-}
+      JKB_CLIENT_ID: ${JKB_CLIENT_ID:-}
+      JKB_CLIENT_SECRET: ${JKB_CLIENT_SECRET:-}
+      CEDEXIS_TOKEN: ${CEDEXIS_TOKEN:-}
+      INFRA_LOOKUP_URL: ${INFRA_LOOKUP_URL:-}
+    volumes:
+      - ./demo:/app/demo:ro
+    networks: [default, db]
+
+  frontend:
+    build: ./jkb_frontend
+    restart: unless-stopped
+    environment:
+      API_UPSTREAM: http://backend:5065
+    depends_on:
+      backend: { condition: service_healthy }
+    ports:
+      - "${FRONTEND_PORT:-5436}:80"
+
+networks:
+  db:
+    name: netdiag_default
+    external: true

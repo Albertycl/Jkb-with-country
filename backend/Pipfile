@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+flask = "*"
+requests = "*"
+python-dotenv = "*"
+flask-sqlalchemy = "*"
+flask-migrate = "*"
+pymysql = "*"
+flask-cors = "*"
+gunicorn = "*"
+pytz = "*"
+waitress = "*"
+
+[requires]
+python_version = "3.8.10"
